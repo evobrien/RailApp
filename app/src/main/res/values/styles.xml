@@ -7,4 +7,33 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="list_cell_text">
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="schedlist_caption_cell" parent="@style/list_cell_text">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingRight">@dimen/standard_padding</item>
+        <item name="android:paddingEnd">@dimen/standard_padding</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="schedlist_data_cell" parent="@style/list_cell_text">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingRight">@dimen/standard_padding</item>
+        <item name="android:paddingEnd">@dimen/standard_padding</item>
+    </style>
+
+    <style name="left_text_cell" parent="@style/schedlist_data_cell">
+        <item name="android:layout_alignParentLeft">true</item>
+        <item name="android:layout_alignParentStart">true</item>
+    </style>
+
+    <style name="right_text_cell" parent="@style/schedlist_data_cell">
+        <item name="android:layout_alignParentRight">true</item>
+        <item name="android:layout_alignParentEnd">true</item>
+    </style>
+
 </resources>
