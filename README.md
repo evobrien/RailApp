@@ -8,14 +8,17 @@
 * Submitting a search goes to screen 2, the scheduled trains screen
 * Clicking on a favourite search goes to screen 2
 * Text search was implemented for it's simplicity and it's convenience (maps can be slow to load)
+
 <img src="search_1.png?" width="400" height="700">
 <img src="search_2.png?" width="400" height="700">
+
 ## Tab2: Map Fragment (as requested )
 * To use the map, you will need to supply your own Google maps api key in the meta tag in the manifest
 * Loads all stations as red markers in Google maps
 * Zooms to the users current location (green marker) if available
 * If current location not available, the app zooms to Connolly station for demo purposes
 * Clicking on a station marker goes to screen2, the scheduled trains screen
+
 <img src="map_screen.png?" width="400" height="700">
 
 # Screen 2:
@@ -25,6 +28,7 @@
 * Each card shows the route (origin -> destination), train type( Dart, train, etc.), Due time, ETA 
 and status (includes late/on-time status, whether the train is en-route and the last station visited)
 * If a train is late, the card header is displayed with an orange background, otherwise it's green
+
 <img src="list_screen.png?" width="400" height="700">
 
 # Techniques/Technologies demonstrated:
