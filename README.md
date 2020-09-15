@@ -28,6 +28,7 @@
 * Each card shows the route (origin -> destination), train type( Dart, train, etc.), Due time, ETA 
 and status (includes late/on-time status, whether the train is en-route and the last station visited)
 * If a train is late, the card header is displayed with an orange background, otherwise it's green
+
 <img src="list_screen.png?" width="400" height="700">
 
 # Techniques/Technologies demonstrated:
