@@ -9,7 +9,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.obregon.railapp.R
 
-class StationAdapter (private var stations:MutableSet<String> ,private var cellClickListener: CellClickListener): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class FavouriteStationsAdapter (var stations:MutableSet<String>, private var cellClickListener: CellClickListener): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
    interface CellClickListener {
        fun onCellClickListener(station: String)

@@ -2,10 +2,10 @@ package com.obregon.railapp.data.repository
 
 import com.obregon.railapp.data.QueryResult
 import com.obregon.railapp.data.QueryResult.*
-import com.obregon.railapp.data.Station
-import com.obregon.railapp.data.StationData
-import com.obregon.railapp.data.TrainMovement
 import com.obregon.railapp.data.api.RailApi
+import com.obregon.railapp.data.db.AppDatabase
+import com.obregon.railapp.data.db.FavouriteStation
+import com.obregon.railapp.data.db.FavouriteStationDao
 import javax.inject.Inject
 
 
@@ -15,9 +15,11 @@ interface RailRepository {
     suspend fun getCurrentTrains(): QueryResult
     suspend fun getTrainsForStationWithinMins(stationDesc:String, numMins:Int): QueryResult
     suspend fun getTrainMovements(trainId:String,trainDate:String):QueryResult
+    suspend fun saveStations(favouriteStation:List<FavouriteStation>)
+    suspend fun getSavedStations():List<String>
 }
 
-class RailRepositoryImpl @Inject constructor(val railApi: RailApi): RailRepository {
+class RailRepositoryImpl @Inject constructor(private val railApi: RailApi, private val favouriteStationDao: FavouriteStationDao): RailRepository {
     override suspend fun getStations(): QueryResult {
         return try{
             var stations= railApi.getAllStations().list
@@ -70,4 +72,13 @@ class RailRepositoryImpl @Inject constructor(val railApi: RailApi): RailReposito
             Failure(e)
         }
     }
+
+    override suspend fun saveStations(favouriteStation: List<FavouriteStation>) {
+       favouriteStationDao.insertAll(*favouriteStation.toTypedArray())
+    }
+
+    override suspend fun getSavedStations(): List<String> {
+        return favouriteStationDao.getAll()
+    }
+
 }

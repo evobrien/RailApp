@@ -1,44 +1,52 @@
 package com.obregon.railapp.ui.search
 
 import android.Manifest
-import android.app.Activity
 import android.content.pm.PackageManager
+import android.location.Location
 import android.os.Bundle
+import android.util.Log
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.tasks.Task
 import com.obregon.railapp.R
 import com.obregon.railapp.data.Station
 import com.obregon.railapp.ui.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.search_screen_layout.*
+import timber.log.Timber
 
+const val FINE_LOCATION_PERMISSION_REQUEST=1
 
 @AndroidEntryPoint
 class MapSearchScreen:Fragment(R.layout.map_screen_fragment),OnMapReadyCallback {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private val viewModel: SearchScreenViewModel by viewModels()
+    private var currentLatLng:LatLng?=null
+    private var isPermissionGranted:Boolean=false
+    private val HOME_MARKER_TITLE:String="Your current location"
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        checkPermissions()
         this.activity?.let { activity ->
             viewModel.stationNames.observe(
                 activity,
-                { setupMap(activity) }
+                { setupMap() }
             )
         }
     }
 
-    fun setupMap(activity: Activity){
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(activity)
+    fun setupMap(){
         val mapFragment=childFragmentManager.findFragmentById(R.id.map) as? SupportMapFragment
         mapFragment?.getMapAsync(this)
     }
@@ -48,17 +56,18 @@ class MapSearchScreen:Fragment(R.layout.map_screen_fragment),OnMapReadyCallback 
         googleMap?.apply {
 
             uiSettings.isZoomControlsEnabled=true
-
+            lateinit var fallBackLatLng:LatLng
             viewModel.stations.value?.let { it ->
                 val stations:List<Station> =it
-                lateinit var latLng1:LatLng
+
                 for(station in stations){
                     val latLng=LatLng(
                         station.stationLatitude.toDouble(),
                         station.stationLongitude.toDouble()
                     )
-                    if(station.stationDesc.contains("Heuston")){
-                            latLng1=latLng
+                    if(station.stationDesc.contains("Connolly")){
+                        fallBackLatLng= LatLng(station.stationLatitude.toDouble(),
+                            station.stationLongitude.toDouble())
                     }
                     addMarker(
                         MarkerOptions()
@@ -70,54 +79,164 @@ class MapSearchScreen:Fragment(R.layout.map_screen_fragment),OnMapReadyCallback 
                         navigate(it.title)
                     }
                 }
-                // [START_EXCLUDE silent]
-                moveCamera(CameraUpdateFactory.newLatLng(latLng1))
-                // [END_EXCLUDE]
+
+                zoomToDeviceLocation(googleMap,fallBackLatLng)
+
             }
         }
     }
 
     private fun navigate(stationName: String):Boolean{
-        (this.activity as MainActivity).navigateToHome(stationName)
+        if(!stationName.contains(HOME_MARKER_TITLE)){ //hack
+            (this.activity as MainActivity).navigateToHome(stationName)
+        }
         return true
     }
 
-  /* private fun getDeviceLocation(googleMap: GoogleMap?) {
+    private fun addMarker(googleMap: GoogleMap?,latLng: LatLng,title:String,bitmapDescriptor: BitmapDescriptor){
+        googleMap?.apply {
+            addMarker(
+                MarkerOptions()
+                    .icon(bitmapDescriptor)
+                    .position(latLng)
+                    .title(title)
+            )
+        }
+    }
+    private fun zoomToDeviceLocation(googleMap: GoogleMap?,fallBackLatLng:LatLng) {
         try {
-            if (mLocationPermissionGranted) {
-                val locationResult: Task<Location> = fusedLocationClient.getLastLocation()
-                locationResult.addOnCompleteListener(object : OnCompleteListener<Location?> {
-                    override fun onComplete(task: Task<Location?>) {
-                        if (task.isSuccessful()) {
-                            // Set the map's camera position to the current location of the device.
-                                val location: Location? = task.getResult()
-                               location?.let{
-                                   val currentLatLng = LatLng(
-                                    location.getLatitude(),
-                                    location.getLongitude()
+            if (isPermissionGranted) {
+                val locationResult: Task<Location> = fusedLocationClient.lastLocation
+                locationResult.addOnSuccessListener { location ->
+                        run {
+                            if(location!=null){
+                                currentLatLng = LatLng(
+                                    location.latitude,
+                                    location.longitude
                                 )
-                                val update = CameraUpdateFactory.newLatLngZoom(
-                                    currentLatLng,
-                                    DEFAULT_ZOOM
-                                )
-                                googleMap?.moveCamera(update)
+                            }else{ //fallback to Connlly for demo purposes if latlng is null
+                                currentLatLng=fallBackLatLng
                             }
-                        }
+                            currentLatLng?.let {
+                             addMarker(
+                                 googleMap,
+                                 currentLatLng as LatLng,
+                                 HOME_MARKER_TITLE,
+                                 BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
+                             )
+                             val update = CameraUpdateFactory.newLatLngZoom(
+                                 currentLatLng,
+                                 13F
+                             )
+                             googleMap?.moveCamera(update)
+                            }
                     }
-                })
+                }
             }
         } catch (e: SecurityException) {
-            Log.e("Exception: %s", e.message)
+            Timber.e(e)
+        }catch (e:NullPointerException) {
+            Timber.e(e)
+        }
+
+    }
+
+    override fun onStart() {
+        super.onStart()
+        checkPermissions()
+        initClient()
+        startLocationUpdates()
+        getLastLocation()
+    }
+
+    override fun onPause() {
+        stopLocationUpdates()
+        super.onPause()
+    }
+
+    private fun initClient(){
+         activity?.let {
+             fusedLocationClient =LocationServices.getFusedLocationProviderClient(it)
+         }
+    }
+    private fun getLastLocation(){
+        try {
+            if (isPermissionGranted) {
+                val locationResult: Task<Location> = fusedLocationClient.lastLocation
+                locationResult.addOnSuccessListener { location ->
+                    run {
+                        if(location!=null){
+                            currentLatLng = LatLng(
+                                location.latitude,
+                                location.longitude
+                            )
+                        }
+                    }
+                }
+            }
+        }catch (e: SecurityException) {
+            Timber.e(e)
         }
     }
 
+    private fun checkPermissions(){
+        if (this.context?.let {
+                ContextCompat.checkSelfPermission(it, Manifest.permission.ACCESS_FINE_LOCATION)
+            } != PackageManager.PERMISSION_GRANTED) {
+            this.activity?.let {
+                ActivityCompat.requestPermissions(
+                    it,
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                    FINE_LOCATION_PERMISSION_REQUEST
+                )
+            }
+        } else {
+            isPermissionGranted = true
+        }
+    }
 
-    fun checkPermissions(){
-        AskPermission.Builder(this)
-            .setPermissions(Manifest.permission.READ_CONTACTS, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            .setCallback(/* PermissionCallback */)
-            .setErrorCallback(/* ErrorCallback */)
-            .request()
-    }*/
+    private val locationRequest: LocationRequest? = null
+    private var locationCallback: LocationCallback?=null
 
+
+    private fun stopLocationUpdates() {
+      locationCallback?.let {
+        fusedLocationClient.removeLocationUpdates(locationCallback)
+      }
+    }
+
+    private fun initLocationCallback(){
+        locationCallback = object:LocationCallback() {
+            @Override
+            override fun onLocationResult(locationResult: LocationResult) {
+                for (location:Location in locationResult.locations) {
+                    currentLatLng= LatLng(location.latitude,location.longitude)
+                }
+            }
+        }
+    }
+
+    private fun startLocationUpdates() {
+        try{
+        if (this.context?.let {
+                ActivityCompat.checkSelfPermission(
+                    it,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                )
+            } != PackageManager.PERMISSION_GRANTED && this.context?.let {
+                ActivityCompat.checkSelfPermission(
+                    it,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            } != PackageManager.PERMISSION_GRANTED
+        ) {
+            checkPermissions()
+            return
+        }
+            initLocationCallback()
+            fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
+        }catch (e:NullPointerException){
+            Timber.e(e)
+        }
+    }
 }

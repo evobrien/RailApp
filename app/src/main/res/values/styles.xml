@@ -8,7 +8,7 @@
     </style>
 
     <style name="list_cell_text">
-        <item name="android:textSize">16sp</item>
+        <item name="android:textSize">18sp</item>
     </style>
 
     <style name="schedlist_caption_cell" parent="@style/list_cell_text">

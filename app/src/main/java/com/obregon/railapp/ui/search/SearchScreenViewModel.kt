@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.obregon.railapp.data.QueryResult
 import com.obregon.railapp.data.Station
+import com.obregon.railapp.data.db.FavouriteStation
 import com.obregon.railapp.data.repository.RailRepository
 import com.obregon.railapp.ui.NETWORK_ERROR
 import com.obregon.railapp.ui.UNKNOWN_ERROR
@@ -26,6 +27,9 @@ class SearchScreenViewModel @ViewModelInject constructor(private val railReposit
 
     private var _stations = MutableLiveData<List<Station>>()
     var stations = _stations
+
+    private var _favouriteStations = MutableLiveData<List<String>>()
+    var favouriteStations = _favouriteStations
 
     init {
         viewModelScope.launch {
@@ -60,5 +64,21 @@ class SearchScreenViewModel @ViewModelInject constructor(private val railReposit
         _stationNames.value=stationNames as Array<String>
     }
 
+
+    fun getAllFavouriteStations(){
+        viewModelScope.launch {
+            _favouriteStations.value = railRepository.getSavedStations()
+        }
+    }
+
+    fun saveFavouriteStations(favouriteStationNames: List<String>){
+        val stationList:MutableList<FavouriteStation> = ArrayList()
+        for(stationName in favouriteStationNames){
+            stationList.add(FavouriteStation(stationName))
+        }
+        viewModelScope.launch {
+            railRepository.saveStations(stationList)
+        }
+    }
 
 }
