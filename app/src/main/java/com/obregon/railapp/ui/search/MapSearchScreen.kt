@@ -5,6 +5,8 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
+import android.view.inputmethod.EditorInfo
+import android.widget.ArrayAdapter
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -23,6 +25,7 @@ import com.obregon.railapp.R
 import com.obregon.railapp.data.Station
 import com.obregon.railapp.ui.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.android.synthetic.main.search_screen_layout.*
 import timber.log.Timber
 
 const val FINE_LOCATION_PERMISSION_REQUEST=1
@@ -34,6 +37,7 @@ class MapSearchScreen:Fragment(R.layout.map_screen_fragment),OnMapReadyCallback 
     private var currentLatLng:LatLng?=null
     private var isPermissionGranted:Boolean=false
     private val HOME_MARKER_TITLE:String="Your current location"
+    private var refGoogleMap:GoogleMap? =null
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -41,8 +45,33 @@ class MapSearchScreen:Fragment(R.layout.map_screen_fragment),OnMapReadyCallback 
         this.activity?.let { activity ->
             viewModel.stationNames.observe(
                 activity,
-                { setupMap() }
+                { doLayout(it) }
             )
+
+        }
+    }
+
+    private fun doLayout(searchItems: Array<String>){
+        setSearchBox(searchItems)
+        setupMap()
+    }
+
+    private fun setSearchBox(searchItems: Array<String>) {
+        this.activity?.let { fragmentActivity ->
+            val adapter = ArrayAdapter<String>(fragmentActivity, android.R.layout.select_dialog_item, searchItems)
+            auto_complete_view.threshold = 1
+            auto_complete_view.setAdapter(adapter)
+            auto_complete_view.setOnEditorActionListener { v, actionId, event ->
+                if(actionId == EditorInfo.IME_ACTION_DONE){
+                    val latLng=viewModel.getStationLatLng(auto_complete_view.text.toString())
+                    latLng?.let{
+                        zoomToLocation(refGoogleMap,it)
+                    }
+                    true
+                } else {
+                    false
+                }
+            }
         }
     }
 
@@ -51,10 +80,10 @@ class MapSearchScreen:Fragment(R.layout.map_screen_fragment),OnMapReadyCallback 
         mapFragment?.getMapAsync(this)
     }
 
+
     override fun onMapReady(googleMap: GoogleMap?) {
-
+        refGoogleMap=googleMap
         googleMap?.apply {
-
             uiSettings.isZoomControlsEnabled=true
             lateinit var fallBackLatLng:LatLng
             viewModel.stations.value?.let { it ->
@@ -101,6 +130,22 @@ class MapSearchScreen:Fragment(R.layout.map_screen_fragment),OnMapReadyCallback 
                     .position(latLng)
                     .title(title)
             )
+        }
+    }
+
+    private fun zoomToLocation(googleMap: GoogleMap?,targetLocation:LatLng){
+        try {
+            if (isPermissionGranted) {
+                    val update = CameraUpdateFactory.newLatLngZoom(
+                        targetLocation,
+                        13F
+                    )
+                    googleMap?.moveCamera(update)
+                }
+        } catch (e: SecurityException) {
+            Timber.e(e)
+        }catch (e:NullPointerException) {
+            Timber.e(e)
         }
     }
     private fun zoomToDeviceLocation(googleMap: GoogleMap?,fallBackLatLng:LatLng) {
