@@ -44,11 +44,18 @@ from Google. This cuts down significantly on complicated boilerplate in both Dag
 and vanilla Dagger2.
 Dependencies in the app are organized into a single app module and installed in the application scope, 
 for simplity (It would have been to break them down into Network, Repo and Db modules given enough time)
+Dagger-Hilt as with Dagger2 doesn't use reflection at runtime - all logic is generated at compile time
 ## Database technology: 
 The Room ORM is used for interacting with the Db. Tables are interacted with by using DAOs which
  correspond 1:1 with tables. Each Dao contains one or more methods annotated with SQL queries which
   ROOM compiles into concrete logic at compilation (DAOs in Room are interfaces so just describe 
   the desired behaviour)
+##  Network layer /REST queries
+Retrofit is used in the network layer for querying the web services (works similarly to room - 
+interface + markup on method definition which is converted to concrete implementation at compile time )
+The SimplexML library is used for marshalling the XML data returned by the web services to their 
+object representation. Again, it uses a simple object + annotation approach similar to libs like 
+Gson uses for JSON to object marshalling.
 ## Testing & Mocking
 * Unit tests are executed using JUNIT4
 * Mockk is the Mocking technology used for Mocks. This is simpler to use than traditional Java 
