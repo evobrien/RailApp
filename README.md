@@ -67,7 +67,7 @@ Mocking technologies such as Mockito, particularly when dealing with Coroutines
 ## Unit tests:
 1. Unit tests have only been implemented on the Repository class. The view model classes need to be tested
 ## Maps: 
-1. A text search/zoom function has not been implemented. this would make the map a lot more usable
+~~1. A text search/zoom function has not been implemented. this would make the map a lot more usable~~ (FIXED)
 2. Side scolling on the Viewpager needs to disabled in onTouch on the map
 3. Retrieving the current Location is flaky and needs some investigation
 4. Trains use only standad red markers - this should be improved
