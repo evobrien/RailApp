@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.maps.model.LatLng
 import com.obregon.railapp.data.QueryResult
 import com.obregon.railapp.data.Station
 import com.obregon.railapp.data.db.FavouriteStation
@@ -26,10 +27,10 @@ class SearchScreenViewModel @ViewModelInject constructor(private val railReposit
     var stationNames:LiveData<Array<String>> =_stationNames
 
     private var _stations = MutableLiveData<List<Station>>()
-    var stations = _stations
+    var stations:LiveData<List<Station>>  = _stations
 
     private var _favouriteStations = MutableLiveData<List<String>>()
-    var favouriteStations = _favouriteStations
+    var favouriteStations:LiveData<List<String>> = _favouriteStations
 
     init {
         viewModelScope.launch {
@@ -79,6 +80,19 @@ class SearchScreenViewModel @ViewModelInject constructor(private val railReposit
         viewModelScope.launch {
             railRepository.saveStations(stationList)
         }
+    }
+
+    fun getStationLatLng(stationName:String):LatLng?{
+        this.stations.value?.let {
+            for(station in it){
+                if(station.stationDesc==stationName){
+                    return LatLng(
+                        station.stationLatitude.toDouble(),
+                        station.stationLongitude.toDouble())
+                }
+            }
+        }
+        return null
     }
 
 }
