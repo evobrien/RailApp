@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">RailApp</string>
+    <string name="refresh">Refresh</string>
+    <string name="station_hint">Search Stations</string>
+    <string name="recent_stations">Recent Stations</string>
+    <string name="search_station">Search station</string>
+    <string name="submit">Submit</string>
 </resources>

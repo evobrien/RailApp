@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/standard_margin"
+    android:background="@color/white"
+    app:cardBackgroundColor="@color/white"
+    app:cardElevation="8dp"
+    app:cardUseCompatPadding="true">
+<LinearLayout
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <RelativeLayout android:id="@+id/route_section"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/green"
+        android:padding="@dimen/standard_padding">
+        <TextView android:id="@+id/route"
+            style="@style/schedlist_data_cell"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:textSize="@dimen/subtitle_size"
+            android:textColor="@color/white"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/standard_padding">
+
+        <ImageView android:id="@+id/iv_traintype"
+            style="@style/schedlist_caption_cell"
+            android:src="@drawable/tram"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            />
+
+        <TextView android:id="@+id/train_type"
+            style="@style/schedlist_data_cell"
+            android:layout_toRightOf="@id/iv_traintype"
+            android:paddingTop="12dp"
+            />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/standard_padding"
+       >
+
+        <TextView android:id="@+id/train_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/left_text_cell"
+            android:textStyle="bold"
+            android:visibility="gone"/>
+
+        <TextView android:id="@+id/due_caption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/left_text_cell"
+            android:textStyle="bold"
+            android:text="Due(mins):" />
+
+        <TextView android:id="@+id/due"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/schedlist_data_cell"
+            android:layout_toRightOf="@id/due_caption"
+            android:layout_toEndOf="@id/due_caption"
+            android:textStyle="bold"/>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/standard_padding">
+
+        <TextView android:id="@+id/dest_due_time_caption"
+            style="@style/schedlist_caption_cell"
+            android:text="ETA:"
+            />
+
+        <TextView android:id="@+id/dest_time"
+            style="@style/schedlist_data_cell"
+            android:layout_toEndOf="@id/dest_due_time_caption"/>
+
+    </RelativeLayout>
+
+    <!-- <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView android:id="@+id/late_yn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/schedlist_data_cell"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+    </RelativeLayout> -->
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/standard_padding">
+        <TextView android:id="@+id/status_caption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/schedlist_caption_cell"
+            android:text="Status:"/>
+        <TextView android:id="@+id/status_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/schedlist_data_cell"
+            android:layout_toRightOf="@id/status_caption"
+            android:layout_toEndOf="@id/status_caption" />
+    </RelativeLayout>
+
+   <!-- <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView android:id="@+id/last_location_caption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/schedlist_caption_cell"
+            android:text="Last location:"/>
+        <TextView android:id="@+id/last_location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/schedlist_data_cell"
+            android:layout_toRightOf="@id/last_location_caption"
+            android:layout_toEndOf="@id/last_location_caption" />
+    </RelativeLayout> -->
+</LinearLayout>
+</androidx.cardview.widget.CardView>
