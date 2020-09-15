@@ -63,7 +63,7 @@ Mocking technologies such as Mockito, particularly when dealing with Coroutines
 
 # Issues:
 ## Landscape orientation 
-~~ 1. The app is ok in portrait but has scrolling issues in landscape ~~ (FIXED)
+~~1. The app is ok in portrait but has scrolling issues in landscape~~ (FIXED)
 ## Unit tests:
 1. Unit tests have only been implemented on the Repository class. The view model classes need to be tested
 ## Maps: 
