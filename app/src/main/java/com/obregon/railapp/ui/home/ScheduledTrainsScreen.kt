@@ -2,13 +2,18 @@ package com.obregon.railapp.ui.home
 
 import android.os.Bundle
 import android.view.*
+import android.widget.Toast
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.lifecycle.Lifecycle
+import androidx.viewpager2.adapter.FragmentStateAdapter
+import com.google.android.material.tabs.TabLayoutMediator
 import com.obregon.railapp.R
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.scheduled_screen_fragment.*
+import kotlinx.android.synthetic.main.scheduled_trains_host.*
 
 val STATION_KEY="STATION_NAME"
 
@@ -37,7 +42,7 @@ class ScheduledTrainsScreen:Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.scheduled_screen_fragment, container, false)
+        return inflater.inflate(R.layout.scheduled_trains_host, container, false)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -46,6 +51,7 @@ class ScheduledTrainsScreen:Fragment() {
         val station=args?.getString(STATION_KEY)
         station?.let {
             viewModel.getTrainData(station)
+            selected_station.text=station
         }
         setObservers()
     }
@@ -65,38 +71,61 @@ class ScheduledTrainsScreen:Fragment() {
     private fun setObservers(){
         showProgress()
         viewModel.error.observeForever{handleError(it)}
-        viewModel.uiDataList.observeForever{layoutList(it)}
+        viewModel.uiDataList.observeForever{layoutTabs(it)}
     }
 
-    private fun handleError(string: String){
-        error_text.text=string
-        error_text.visibility=View.VISIBLE
-        train_list.visibility=View.GONE
+    private fun handleError(errorText: String){
+        //Toast.makeText(context,errorText,Toast.LENGTH_LONG)
+        sth_error_text.text=errorText
+        sth_error_text.visibility=View.VISIBLE
+        tab_host.visibility=View.GONE
         hideProgress()
     }
 
-    private fun layoutList(trainList:List<UiTrainListData>){
-        error_text.visibility=View.GONE
-        train_list.visibility=View.VISIBLE
+    private fun layoutTabs(trainList:List<UiTrainDataGroup>){
 
-        train_list.apply {
-            adapter=TrainListAdapter(trainList)
-            layoutManager=LinearLayoutManager(context)
+        val titles= mutableListOf<String>()
+        for(trainDataGroup in trainList){
+            titles.add(trainDataGroup.direction)
         }
+        setupAdapter(titles,trainList)
         hideProgress()
     }
 
     private fun showProgress(){
-        progressBar.visibility= View.VISIBLE
-        ViewCompat.setTranslationZ(progressBar, 2F)
+        sth_progressBar.visibility= View.VISIBLE
+        ViewCompat.setTranslationZ(sth_progressBar, 2F)
     }
 
     private fun hideProgress(){
-        progressBar.visibility= View.INVISIBLE
+        sth_progressBar.visibility= View.INVISIBLE
     }
 
     private fun reload(){
         showProgress()
         viewModel.reload()
+    }
+
+    private fun setupAdapter(titles:List<String>,trainList:List<UiTrainDataGroup>){
+        val trainsPagerAdapter =
+            TrainsPagerAdapter(this.childFragmentManager, this.lifecycle,trainList)
+        trains_pager.adapter=trainsPagerAdapter
+        TabLayoutMediator(trains_tab_layout, trains_pager) { tab, position ->
+            tab.text = titles[position]
+        }.attach()
+    }
+
+    class TrainsPagerAdapter(fragmentManager: FragmentManager, lifecycle: Lifecycle,
+                             private val trainList:List<UiTrainDataGroup>): FragmentStateAdapter(
+        fragmentManager,
+        lifecycle
+    ) {
+        override fun getItemCount(): Int {
+            return trainList.size
+        }
+
+        override fun createFragment(position: Int): Fragment {
+            return ScheduledTrainsFragment.newInstance(trainList[position])
+        }
     }
 }

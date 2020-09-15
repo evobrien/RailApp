@@ -1,4 +1,10 @@
 package com.obregon.railapp.ui.home
+
+import android.os.Message
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
+import java.io.Serializable
+
 /*
 *   <Servertime>2020-09-03T23:55:15.143</Servertime>
     <Traincode>E703 </Traincode>
@@ -22,12 +28,12 @@ package com.obregon.railapp.ui.home
     <Traintype>DART</Traintype>
     <Locationtype>S</Locationtype>
 * */
-data class UiTrainData constructor(val origin:String,
+@Parcelize
+data class UiTrainData (val route:String,val origin:String,
                                    val destination:String,
-                                   val lastLocation:String,
                                    val status:String,
                                    val dueIn:String,
-                                   val late:String,
+                                   val late:Boolean,
                                    val expDepart:String,
                                    val expArrival:String,
                                    val schArrival:String,
@@ -36,10 +42,8 @@ data class UiTrainData constructor(val origin:String,
                                    val trainType:String,
                                    val trainCode:String,
                                    val originTime:String,
-                                   val destinationTime:String)
-data class UiTrainListData constructor(val rowType:RowType, val uiTrainData: UiTrainData)
-
-enum class RowType (val type:Int){
-    TYPE_TITLE(0),
-    TYPE_ROW(1)
-}
+                                   val destinationTime:String, val scheduledLater:Boolean):Parcelable
+@Parcelize
+data class UiTrainDataGroup(val direction:String,
+                            val uiTrainDataList:List<UiTrainData>,
+                            val errorMessage: String=""):Parcelable

@@ -1,7 +1,10 @@
 package com.obregon.railapp.di
 
 import android.content.Context
+import androidx.room.Room
 import com.obregon.railapp.data.api.RailApi
+import com.obregon.railapp.data.db.AppDatabase
+import com.obregon.railapp.data.db.FavouriteStationDao
 import com.obregon.railapp.data.repository.RailRepository
 import com.obregon.railapp.data.repository.RailRepositoryImpl
 import dagger.Module
@@ -70,5 +73,11 @@ object AppModule {
     @Provides
     fun provideRailRepository(railRepositoryImpl: RailRepositoryImpl): RailRepository {
         return railRepositoryImpl
+    }
+
+    @Singleton
+    @Provides
+    fun providesFavouriteStationsDao(@ApplicationContext context: Context):FavouriteStationDao {
+       return AppDatabase.getInstance(context).savedStationDao()
     }
 }

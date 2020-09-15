@@ -11,49 +11,89 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.search_screen_layout.*
 
 @AndroidEntryPoint
-class TextSearchScreen: Fragment(R.layout.search_screen_layout), StationAdapter.CellClickListener {
+class TextSearchScreen: Fragment(R.layout.search_screen_layout), FavouriteStationsAdapter.CellClickListener {
     private val searchScreenViewModel: SearchScreenViewModel by viewModels()
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         this.activity?.let { activity ->
             searchScreenViewModel.stationNames.observe(
-                activity, { setupSearchView(it) }
+                activity, { doLayout(it) }
             )
         }
     }
 
 
-    private fun setupSearchView(searchItems: Array<String>) {
+    private fun doLayout(searchItems: Array<String>) {
+        setSearchBox(searchItems)
+        setFavouriteList()
+        loadFavourites()
+        setSubmitButton()
+    }
 
+    private fun setSearchBox(searchItems: Array<String>) {
         this.activity?.let {
-            val adapter = ArrayAdapter<String>(it, android.R.layout.select_dialog_item,searchItems)
+            val adapter = ArrayAdapter<String>(it, android.R.layout.select_dialog_item, searchItems)
             auto_complete_view.threshold = 1
             auto_complete_view.setAdapter(adapter)
         }
+    }
 
-        val recentSearchList=mutableSetOf<String>()
-        val stationAdapter=StationAdapter(recentSearchList,this)
+    private fun setFavouriteList() {
+        val recentSearchList = mutableSetOf<String>()
+        val stationAdapter = FavouriteStationsAdapter(recentSearchList, this)
         recent_searches.apply {
             layoutManager = LinearLayoutManager(context)
-            adapter=stationAdapter
+            adapter = stationAdapter
         }
+    }
 
+    private fun setSubmitButton() {
         btn_submit.setOnClickListener {
-            val stationName=auto_complete_view.text.toString()
-            if(stationName.isNotEmpty()){
+            val stationName = auto_complete_view.text.toString()
+            if (stationName.isNotEmpty()) {
                 navigate(stationName)
             }
         }
     }
 
     private fun navigate(stationName: String){
-        (recent_searches.adapter as StationAdapter).addItem(stationName)
+        addFavourite(stationName)
         (this.activity as MainActivity).navigateToHome(stationName)
+    }
+
+    private fun addFavourite(stationName: String) {
+        (recent_searches.adapter as FavouriteStationsAdapter).addItem(stationName)
+    }
+
+    private fun addAllFavourites(favourites:List<String>){
+        for(favourite in favourites){
+            addFavourite(favourite)
+        }
     }
 
     override fun onCellClickListener(station: String) {
        navigate(station)
+    }
+
+    private fun loadFavourites(){
+        activity?.let { activity ->
+            searchScreenViewModel.favouriteStations.observe(activity,{
+                addAllFavourites(it)
+            })
+        }
+        searchScreenViewModel.getAllFavouriteStations()
+    }
+
+    private fun saveFavourites(){
+        val stations=
+            (recent_searches.adapter as FavouriteStationsAdapter).stations
+        searchScreenViewModel.saveFavouriteStations(stations.toList())
+    }
+
+    override fun onPause() {
+        saveFavourites()
+        super.onPause()
     }
 
 }
