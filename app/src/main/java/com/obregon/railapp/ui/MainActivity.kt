@@ -10,6 +10,7 @@ import com.obregon.railapp.R
 import com.obregon.railapp.ui.home.ScheduledTrainsScreen
 import com.obregon.railapp.ui.host.HostScreen
 import dagger.hilt.android.AndroidEntryPoint
+import timber.log.Timber
 
 
 @AndroidEntryPoint
@@ -22,7 +23,8 @@ class MainActivity : AppCompatActivity(R.layout.main_activity) {
     }
 
     private fun setActionBar(){
-        if(this.supportFragmentManager.fragments.size>1){
+        Timber.i("BackstackEntryCount ${this.supportFragmentManager.backStackEntryCount}")
+        if(this.supportFragmentManager.backStackEntryCount>0){
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
             this.supportActionBar?.setDisplayShowHomeEnabled(false)
 
@@ -74,11 +76,7 @@ class MainActivity : AppCompatActivity(R.layout.main_activity) {
 
     override fun onBackPressed() {
         super.onBackPressed()
-        if (supportFragmentManager.backStackEntryCount > 1) {
-            supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        } else {
-            supportActionBar?.setDisplayHomeAsUpEnabled(false)
-        }
+        setActionBar()
     }
 
 }

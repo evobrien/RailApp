@@ -38,6 +38,7 @@
                         android:textSize="@dimen/standard_text"
                         android:hint="@string/search_station"
                         tools:text="Item"
+                        android:imeOptions="actionDone"
                         android:singleLine="true"/>
 
                     <Button android:id="@+id/btn_submit"

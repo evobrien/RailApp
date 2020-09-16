@@ -1,12 +1,14 @@
 package com.obregon.railapp.ui.search
 
 import android.os.Bundle
+import android.view.inputmethod.EditorInfo
 import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.obregon.railapp.R
 import com.obregon.railapp.ui.MainActivity
+import com.obregon.railapp.utils.hideKeyboard
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.search_screen_layout.*
 
@@ -36,6 +38,14 @@ class TextSearchScreen: Fragment(R.layout.search_screen_layout), FavouriteStatio
             val adapter = ArrayAdapter<String>(it, android.R.layout.select_dialog_item, searchItems)
             auto_complete_view.threshold = 1
             auto_complete_view.setAdapter(adapter)
+            auto_complete_view.setOnEditorActionListener { v, actionId, event ->
+                if(actionId == EditorInfo.IME_ACTION_DONE){
+                    hideKeyboard()
+                    true
+                } else {
+                    false
+                }
+            }
         }
     }
 
@@ -52,6 +62,7 @@ class TextSearchScreen: Fragment(R.layout.search_screen_layout), FavouriteStatio
         btn_submit.setOnClickListener {
             val stationName = auto_complete_view.text.toString()
             if (stationName.isNotEmpty()) {
+                hideKeyboard()
                 navigate(stationName)
             }
         }
